@@ -31,3 +31,4 @@
 /Users/user/LibApp2/UserApi/obj/Debug/net10.0/UserApi.pdb
 /Users/user/LibApp2/UserApi/obj/Debug/net10.0/UserApi.genruntimeconfig.cache
 /Users/user/LibApp2/UserApi/obj/Debug/net10.0/ref/UserApi.dll
+/Users/user/LibApp2/UserApi/obj/Debug/net10.0/UserApi.sourcelink.json

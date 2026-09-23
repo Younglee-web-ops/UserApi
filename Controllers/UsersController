@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Text.RegularExpressions;
 
 namespace UserApi.Controllers
 {
@@ -14,50 +15,93 @@ namespace UserApi.Controllers
         [HttpGet]
         public ActionResult<List<User>> GetAll()
         {
-            return Ok(users);
+            try
+            {
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"서버 오류: {ex.Message}");
+            }
         }
 
         [HttpGet("{id}")]
         public ActionResult<User> GetById(int id)
         {
-            var user = users.FirstOrDefault(u => u.Id == id);
-            if (user == null) return NotFound();
-            return Ok(user);
+            try
+            {
+                var user = users.FirstOrDefault(u => u.Id == id);
+                if (user == null) return NotFound($"ID {id}에 해당하는 사용자를 찾을 수 없습니다.");
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"서버 오류: {ex.Message}");
+            }
         }
 
         [HttpPost]
         public ActionResult<User> Create(User newUser)
         {
-            if (string.IsNullOrWhiteSpace(newUser.Name) || string.IsNullOrWhiteSpace(newUser.Email))
+            try
             {
-                return BadRequest("이름과 이메일은 필수입니다.");
+                if (string.IsNullOrWhiteSpace(newUser.Name))
+                {
+                    return BadRequest("이름은 필수입니다.");
+                }
+                if (string.IsNullOrWhiteSpace(newUser.Email) || !Regex.IsMatch(newUser.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+                {
+                    return BadRequest("유효한 이메일 주소를 입력해주세요.");
+                }
+                newUser.Id = users.Count > 0 ? users.Max(u => u.Id) + 1 : 1;
+                users.Add(newUser);
+                return CreatedAtAction(nameof(GetById), new { id = newUser.Id }, newUser);
             }
-            newUser.Id = users.Count > 0 ? users.Max(u => u.Id) + 1 : 1;
-            users.Add(newUser);
-            return CreatedAtAction(nameof(GetById), new { id = newUser.Id }, newUser);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"서버 오류: {ex.Message}");
+            }
         }
 
         [HttpPut("{id}")]
         public IActionResult Update(int id, User updatedUser)
         {
-            var user = users.FirstOrDefault(u => u.Id == id);
-            if (user == null) return NotFound();
-            if (string.IsNullOrWhiteSpace(updatedUser.Name) || string.IsNullOrWhiteSpace(updatedUser.Email))
+            try
             {
-                return BadRequest("이름과 이메일은 필수입니다.");
+                var user = users.FirstOrDefault(u => u.Id == id);
+                if (user == null) return NotFound($"ID {id}에 해당하는 사용자를 찾을 수 없습니다.");
+                if (string.IsNullOrWhiteSpace(updatedUser.Name))
+                {
+                    return BadRequest("이름은 필수입니다.");
+                }
+                if (string.IsNullOrWhiteSpace(updatedUser.Email) || !Regex.IsMatch(updatedUser.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+                {
+                    return BadRequest("유효한 이메일 주소를 입력해주세요.");
+                }
+                user.Name = updatedUser.Name;
+                user.Email = updatedUser.Email;
+                return NoContent();
             }
-            user.Name = updatedUser.Name;
-            user.Email = updatedUser.Email;
-            return NoContent();
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"서버 오류: {ex.Message}");
+            }
         }
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var user = users.FirstOrDefault(u => u.Id == id);
-            if (user == null) return NotFound();
-            users.Remove(user);
-            return NoContent();
+            try
+            {
+                var user = users.FirstOrDefault(u => u.Id == id);
+                if (user == null) return NotFound($"ID {id}에 해당하는 사용자를 찾을 수 없습니다.");
+                users.Remove(user);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"서버 오류: {ex.Message}");
+            }
         }
     }
 }
