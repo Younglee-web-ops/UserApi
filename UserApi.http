@@ -27,3 +27,6 @@ Accept: application/json
 GET {{UserApi_HostAddress}}/api/data/users/1
 Authorization: Bearer mysecrettoken
 Accept: application/json
+### 제품 목록 조회 (category 중첩 확인)
+GET {{UserApi_HostAddress}}/api/productlist
+Accept: application/json
