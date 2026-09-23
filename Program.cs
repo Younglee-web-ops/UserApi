@@ -2,6 +2,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -20,9 +27,15 @@ app.Use(async (context, next) =>
     }
 });
 
-// 2. 인증 미들웨어 (두 번째)
+// 2. 인증 미들웨어 (두 번째) - /api/inventory는 인증 제외
 app.Use(async (context, next) =>
 {
+    if (context.Request.Path.StartsWithSegments("/api/data/inventory"))
+    {
+        await next();
+        return;
+    }
+
     var token = context.Request.Headers["Authorization"].ToString();
     if (string.IsNullOrWhiteSpace(token) || token != "Bearer mysecrettoken")
     {
@@ -48,6 +61,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 
 app.MapControllers();
 
